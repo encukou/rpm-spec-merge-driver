@@ -12,15 +12,21 @@ SCISSORS_RE = re.compile('-* 8< -*')
 case_filenames = list(Path(__file__).parent.glob('cases/*'))
 
 
-def run_driver(*argv):
+def run_driver(*argv, **kwargs):
     argv = [sys.executable, TOOL, *argv]
-    subprocess.run(argv, check=True)
+    env = kwargs.setdefault('env', {})
+    env.setdefault('GIT_AUTHOR_NAME', 'Merge Driver User')
+    env.setdefault('GIT_AUTHOR_EMAIL', 'merger@example.org')
+    env.setdefault('GIT_AUTHOR_DATE', '2020-08-13 12:34')
+    return subprocess.run(argv, **kwargs)
 
 
 @pytest.mark.parametrize('case_filename', case_filenames)
 def test_case(case_filename, tmp_path):
     source = Path(case_filename).read_text()
-    base, main, new, expected = SCISSORS_RE.split(source)
+    ok, base, main, new, expected = SCISSORS_RE.split(source)
+
+    ok = ok.strip()
 
     base_path = tmp_path / 'base'
     main_path = tmp_path / 'main'
@@ -31,8 +37,12 @@ def test_case(case_filename, tmp_path):
     main_path.write_text(main.strip())
     new_path.write_text(new.strip())
 
-    run_driver(base_path, main_path, new_path, '20', 'placeholder')
+    proc = run_driver(base_path, main_path, new_path, '20', 'placeholder')
 
     result = main_path.read_text()
 
     assert result == expected.strip()
+    if ok == 'OK':
+        assert proc.returncode == 0
+    else:
+        assert proc.returncode != 0

@@ -63,7 +63,8 @@ need to resolve all the conflicts, as usual.
 
 ## Assumptions
 
-Your spec file must contain the following lines:
+Your spec file must be UTF-8 encoded
+and contain exactly one each of the following lines:
 
 ```
 Version: ...
@@ -94,7 +95,7 @@ should be the one that was pushed to dist-git and possibly  built from;
 NEW is the one and you're merging in.
 NEW can be rebased/squashed on top of MAIN if that's your workflow.
 
-The driver also looks at the *nearest common ancestor*,
+The driver also looks at the *common ancestor*,
 or the version where the two branches diverged.
 I'll call that the BASE.
 
@@ -107,13 +108,12 @@ All other changes are passed to Git's built-in 3-way merge (`git merge-file`).
 The merge driver selects the *highest* version from the files being merged,
 as determined by `rpmdev-vercmp`.
 
-If the `BASE` has a higher version than any of the two branches,
+If MAIN has the highest version, Release is set to MAIN's release plus one.
+
+Otherwise if NEW has the hightest version, Release is set to 1.
+
+Otherwise (BASE has a higher version than any of the two branches),
 the driver fails.
-
-Otherwise, if MAIN has the highest version,
-Release is set to MAIN's release plus one.
-
-Otherwise, Release is set to 1.
 
 
 ### Merging the Changelog
@@ -124,14 +124,15 @@ otherwise the driver fails.
 
 For each branch (BASE, MAIN, NEW),
 everything above the TOP is *new* part and everything below is *old*.
-The BASE's *new* part must be empty.
 
-The *old* parts are merged using Git's built-in 3-way merge (`git merge-file`).
+The *old* parts are left to be merged using Git's built-in 3-way merge.
 (This can lead to conflicts,
 but it also means timestamp fixes or old history deletion
 is taken from both the branches.)
 
-The *new* part of MAIN's changelog is added as-is.
+The BASE's *new* part must be empty.
+
+The MAIN's *new* part is added as-is.
 
 From NEW, the order of the *new* changelog blocks is reversed,
 the header lines are removed,

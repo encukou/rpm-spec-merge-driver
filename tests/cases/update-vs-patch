@@ -1,7 +1,10 @@
+OK
+-------- 8< --------
+
 Name: update-vs-patch
 
 Version: 1.0
-Release: 5
+Release: 5%{?dist}
 
 ... Initial spec file content ...
 
@@ -18,7 +21,7 @@ Release: 5
 Name: update-vs-patch
 
 Version: 1.1
-Release: 2
+Release: 2%{?dist}
 
 ... Initial spec file content ...
 
@@ -41,7 +44,7 @@ Release: 2
 Name: update-vs-patch
 
 Version: 1.0
-Release: 7
+Release: 7%{?dist}
 
 ... Patched spec file content ...
 
@@ -64,7 +67,7 @@ Release: 7
 Name: update-vs-patch
 
 Version: 1.1
-Release: 3
+Release: 3%{?dist}
 
 ... Patched spec file content ...
 
@@ -73,10 +76,10 @@ Release: 3
 - Add a patch
 - Adjust the patch
 
-* Tue May 31 2016 Happy Packager <happy@example.org> - 1.1-2
+* Tue May 31 2018 Happy Packager <happy@example.org> - 1.1-2
 - Add sources
 
-* Tue May 31 2016 Happy Packager <happy@example.org> - 1.1-1
+* Tue May 31 2017 Happy Packager <happy@example.org> - 1.1-1
 - New upstream release
 
 * Tue May 31 2016 Happy Packager <happy@example.org> - 1.0-5

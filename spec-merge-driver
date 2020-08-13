@@ -1,2 +1,217 @@
-#! /usr/bin/python
+#! /usr/bin/env python3
 
+from pathlib import Path
+import sys
+import re
+import argparse
+import traceback
+import subprocess
+import functools
+from dataclasses import dataclass
+import datetime
+import os
+import email.utils
+
+VERSION_RE = re.compile(r'Version:(\s*)(\S*)')
+RELEASE_RE = re.compile(r'Release:(\s*)([0-9]*)%\{\?dist\}')
+CHANGELOG_RE = re.compile(
+    r'\*\s*(\w+)\s*(\w+)\s*(\d+)\s*(\d+)\s*([^<]+)<\s*([^>]+)>\s*-\s*(.*)',
+    re.DOTALL,
+)
+
+
+def trace(*args, **kwargs):
+    kwargs.setdefault('file', sys.stderr)
+    print(*args, **kwargs)
+
+
+@functools.cmp_to_key
+def rpmdev_vercmp_key(a, b):
+    proc = subprocess.run(['rpmdev-vercmp', a, b], stdout=subprocess.DEVNULL)
+    if proc.returncode == 0:
+        return 0
+    elif proc.returncode == 11:
+        return 1
+    elif proc.returncode == 12:
+        return -1
+    else:
+        proc.check_returncode()
+
+
+class Spec:
+    def __init__(self, input_path, old_changelog_header=None):
+        try:
+            with input_path.open(encoding='utf-8') as input_file:
+                self.first_lines = []
+                self.version_lineno = None
+                self.release_lineno = None
+                for lineno, line in enumerate(input_file):
+                    self.first_lines.append(line)
+                    stripped = line.strip()
+                    if match := VERSION_RE.fullmatch(stripped):
+                        if self.version_lineno:
+                            raise ValueError(f'Multiple Version lines')
+                        self.version_match = match
+                        self.version_lineno = lineno
+                        self.version = match[2]
+                    if match := RELEASE_RE.fullmatch(stripped):
+                        if self.release_lineno:
+                            raise ValueError(f'Multiple Release lines')
+                        self.release_match = match
+                        self.release_lineno = lineno
+                        self.release = int(match[2])
+                    if stripped == '%changelog':
+                        self.changelog = Changelog(
+                            input_file,
+                            old_changelog_header,
+                        )
+                        break
+                if self.version_lineno is None:
+                    raise ValueError(f'No Version line')
+                if self.release_lineno is None:
+                    raise ValueError(f'No Release line')
+                if not self.changelog:
+                    raise ValueError(f'No %changelog section')
+        except Exception as e:
+            raise ValueError(f'Error parsing {input_path}') from e
+
+    def set_version(self, new_version):
+        new = f'Version:{self.version_match.group(1)}{new_version}\n'
+        self.first_lines[self.version_lineno] = new
+
+    def set_release(self, new_release):
+        new = f'Release:{self.release_match.group(1)}{new_release}%{{?dist}}\n'
+        self.first_lines[self.release_lineno] = new
+
+    def write_to(self, path):
+        result = ''.join(self.first_lines) + self.changelog.to_string()
+        path.write_text(result)
+
+
+@dataclass
+class ChangelogEntry:
+    header: str
+    lines: list
+
+
+@dataclass
+class Changelog:
+    whitespace_lines: list
+    new_entries: list
+    old_entries: list
+
+    def __init__(self, lines, old_changelog_header):
+        self.whitespace_lines = []
+        self.new_entries = []
+        self.old_entries = []
+        if old_changelog_header is None:
+            entries = self.old_entries
+        else:
+            old_changelog_header = old_changelog_header.strip()
+            entries = self.new_entries
+        for line in lines:
+            stripped = line.strip()
+            if not stripped and not entries:
+                whitespace_lines.append(line)
+                continue
+            if stripped == old_changelog_header:
+                entries = self.old_entries
+            if match := CHANGELOG_RE.fullmatch(line):
+                entries.append(ChangelogEntry(line, [line]))
+            else:
+                if not entries:
+                    raise ValueError(f'changelog does not start with header: {stripped}')
+                entries[-1].lines.append(line)
+        if not self.old_entries:
+            raise ValueError('changelog has no old entries')
+
+    def to_string(self):
+        join = ''.join
+        def join_entries(entries):
+            return join(join(entry.lines) for entry in entries)
+        return (
+            join(self.whitespace_lines)
+            + join_entries(self.new_entries)
+            + join_entries(self.old_entries)
+        )
+
+    def squash(self, new_changelog, version, release):
+        orig_new = self.new_entries
+        header = get_changelog_header(version, release)
+        new_entry = ChangelogEntry(header, [header])
+        for entry in reversed(self.new_entries):
+            while not entry.lines[-1].strip():
+                entry.lines.pop()
+            new_entry.lines.extend(entry.lines[1:])
+        new_entry.lines.append('\n')
+        self.new_entries = [new_entry] + new_changelog.new_entries
+        return new_entry
+
+
+def get_changelog_header(version, release):
+    proc = subprocess.run(
+        ['git', 'commit-tree', '4b825dc642cb6eb9a060e54bf8d69288fbee4904'],
+        check=True,
+        stdout=subprocess.PIPE,
+        encoding='ascii',
+        input='',
+    )
+    sha = proc.stdout.strip()
+    proc = subprocess.run(
+        ['git', 'show', '--pretty=format:%aD %aN <%aE>', sha],
+        check=True,
+        stdout=subprocess.PIPE,
+        encoding='ascii',
+    )
+    print(proc.stdout.strip())
+    wd, day, mon, year, _, _, rest = proc.stdout.strip().split(' ', 6)
+    wd = wd.strip(',')
+    return f'* {wd} {mon} {day} {year} {rest} - {version}-{release}\n'
+
+
+def main(base, main, new, marker_size, pathname):
+    try:
+        base_spec = Spec(base)
+        header = base_spec.changelog.old_entries[0].header
+        main_spec = Spec(main, header)
+        new_spec = Spec(new, header)
+        specs = base_spec, main_spec, new_spec
+        max_version = max(
+            [base_spec.version, main_spec.version, new_spec.version],
+            key=rpmdev_vercmp_key,
+        )
+        if max_version == main_spec.version:
+            release = main_spec.release + 1
+        for spec in specs:
+            spec.set_version(max_version)
+            spec.set_release(release)
+
+        if main_spec.changelog.new_entries and new_spec.changelog.new_entries:
+            new_entry = new_spec.changelog.squash(main_spec.changelog, max_version, release)
+            main_spec.changelog.new_entries.insert(0, new_entry)
+
+        base_spec.write_to(base)
+        main_spec.write_to(main)
+        new_spec.write_to(new)
+
+    except BaseException as e:
+        traceback.print_exc()
+    proc = subprocess.run([
+        'git', 'merge-file',
+        '-L', f'HEAD',
+        '-L', f'merged common ancestors',
+        '-L', f'new',
+        main, base, new
+    ])
+    return proc.returncode
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('base', type=Path)
+    parser.add_argument('main', type=Path)
+    parser.add_argument('new', type=Path)
+    parser.add_argument('marker_size', type=int)
+    parser.add_argument('pathname')
+    args = parser.parse_args()
+    exit(main(**vars(args)))
