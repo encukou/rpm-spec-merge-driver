@@ -9,7 +9,10 @@ TOOL = Path(__file__).parent.parent / 'spec-merge-driver'
 
 SCISSORS_RE = re.compile('-* 8< -*')
 
-case_filenames = list(Path(__file__).parent.glob('cases/*'))
+CASES_PATH = Path(__file__).parent / 'cases'
+
+# Filenames as string (so they
+case_filenames = sorted(CASES_PATH.glob('*'))
 
 
 def run_driver(*argv, **kwargs):
@@ -21,9 +24,11 @@ def run_driver(*argv, **kwargs):
     return subprocess.run(argv, **kwargs)
 
 
-@pytest.mark.parametrize('case_filename', case_filenames)
+@pytest.mark.parametrize(
+    'case_filename', (str(p.relative_to(CASES_PATH)) for p in case_filenames),
+)
 def test_case(case_filename, tmp_path):
-    source = Path(case_filename).read_text()
+    source = CASES_PATH.joinpath(case_filename).read_text()
     ok, base, main, new, expected = SCISSORS_RE.split(source)
 
     ok = ok.strip()

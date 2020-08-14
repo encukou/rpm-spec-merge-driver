@@ -110,7 +110,7 @@ as determined by `rpmdev-vercmp`.
 
 If MAIN has the highest version, Release is set to MAIN's release plus one.
 
-Otherwise if NEW has the hightest version, Release is set to 1.
+Otherwise if NEW has the hightest version, Release is set to NEW's release.
 
 Otherwise (BASE has a higher version than any of the two branches),
 the driver fails.

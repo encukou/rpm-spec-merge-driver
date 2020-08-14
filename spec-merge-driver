@@ -182,6 +182,8 @@ def main(base, main, new, marker_size, pathname):
         )
         if max_version == main_spec.version:
             release = main_spec.release + 1
+        elif max_version == new_spec.version:
+            release = new_spec.release
         for spec in specs:
             spec.set_version(max_version)
             spec.set_release(release)
@@ -201,6 +203,7 @@ def main(base, main, new, marker_size, pathname):
         '-L', f'HEAD',
         '-L', f'merged common ancestors',
         '-L', f'new',
+        f'--marker-size={marker_size}',
         main, base, new
     ])
     return proc.returncode
