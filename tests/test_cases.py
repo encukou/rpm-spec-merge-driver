@@ -1,3 +1,14 @@
+"""Test the integration test cases
+
+Each case file in the cases/ directory has these sections,
+separated by scissor lines:
+
+- "OK" or "FAIL", the expected return code
+- The BASE file contents, or merged ancestors
+- The MAIN file contents
+- The NEW file contents
+- The expected result (with conflict markers, if the merge should fail)
+"""
 from pathlib import Path
 import re
 import sys
@@ -11,7 +22,6 @@ SCISSORS_RE = re.compile('-* 8< -*')
 
 CASES_PATH = Path(__file__).parent / 'cases'
 
-# Filenames as string (so they
 case_filenames = sorted(CASES_PATH.glob('*'))
 
 

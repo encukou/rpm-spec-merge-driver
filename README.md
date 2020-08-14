@@ -28,7 +28,8 @@ until you explicitly opt in.)
 
 ## Installation
 
-Put `spec-merge-driver` on your `PATH`.
+Put `spec-merge-driver` on your `PATH`
+(or use an absolute path for `spec-merge-driver` below).
 
 Add this section to your Git config:
 
@@ -138,8 +139,7 @@ From NEW, the order of the *new* changelog blocks is reversed,
 the header lines are removed,
 and the content is added to the beginning of the changelog.
 A new header line is added,
-using `user.name` and `user.email` from Git configuration,
-the current date,
+using the date, `user.name` and `user.email` as if you did a Git commit,
 and the new version and release.
 
 

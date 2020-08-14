@@ -42,7 +42,7 @@ class Spec:
     def __init__(self, input_path, old_changelog_header=None):
         try:
             with input_path.open(encoding='utf-8') as input_file:
-                self.first_lines = []
+                self.first_lines = []  # lines before the changelog
                 self.version_lineno = None
                 self.release_lineno = None
                 for lineno, line in enumerate(input_file):
@@ -136,7 +136,11 @@ class Changelog:
         )
 
     def squash(self, new_changelog, version, release):
-        orig_new = self.new_entries
+        """Return new_entries of this changelog squashed into a single entry
+
+        The returned entry combines the contents of this changelog's
+        new entries, and has a single fresh header line.
+        """
         header = get_changelog_header(version, release)
         new_entry = ChangelogEntry(header, [header])
         for entry in reversed(self.new_entries):
@@ -149,7 +153,15 @@ class Changelog:
 
 
 def get_changelog_header(version, release):
+    r"""Return a changelog header line
+
+    The line is in the RPM spec changelog format, with \n at the end.
+    """
+    # To make this work, we actually make a scratch commit
+    # (but don't put it on a branch), and read info from it.
     proc = subprocess.run(
+        # The big number is the hash of an empty tree.
+        # It happens to be always available in a Git repo.
         ['git', 'commit-tree', '4b825dc642cb6eb9a060e54bf8d69288fbee4904'],
         check=True,
         stdout=subprocess.PIPE,
@@ -170,6 +182,15 @@ def get_changelog_header(version, release):
 
 
 def main(base, main, new, marker_size, pathname):
+    """Git merge driver for spec files
+
+    See: https://git-scm.com/docs/gitattributes#_defining_a_custom_merge_driver
+    The arguments are the "%O %A %B %L %P" from the above docs;
+    the exit code is returned as an integer.
+    Path-like arguments must be Paths.
+
+    See README for how this should work.
+    """
     try:
         base_spec = Spec(base)
         header = base_spec.changelog.old_entries[0].header
@@ -191,6 +212,7 @@ def main(base, main, new, marker_size, pathname):
         if main_spec.changelog.new_entries and new_spec.changelog.new_entries:
             new_entry = new_spec.changelog.squash(main_spec.changelog, max_version, release)
             main_spec.changelog.new_entries.insert(0, new_entry)
+            new_spec.changelog.new_entries = main_spec.changelog.new_entries
 
         base_spec.write_to(base)
         main_spec.write_to(main)
@@ -198,6 +220,11 @@ def main(base, main, new, marker_size, pathname):
 
     except BaseException as e:
         traceback.print_exc()
+
+    # It's important that 'git merge-file' is *always* run.
+    # It overwrites the "main" file.
+    # If that doesn't happen for some reason, the file in the working tree will
+    # be replaced by the "MAIN" version, with no conflict markers...
     proc = subprocess.run([
         'git', 'merge-file',
         '-L', f'HEAD',
