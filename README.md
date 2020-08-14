@@ -36,7 +36,7 @@ Add this section to your Git config:
 [merge "rpm-spec"]
     name = RPM spec file merge driver
     driver = spec-merge-driver %O %A %B %L %P
-    recursive = binary
+    recursive = text
 ```
 
 Your Git config is either:
