@@ -16,7 +16,7 @@ import subprocess
 
 import pytest
 
-TOOL = Path(__file__).parent.parent / 'spec-merge-driver'
+TOOL = Path(__file__).parent.parent / 'rpm-spec-merge-driver'
 
 SCISSORS_RE = re.compile('-* 8< -*')
 

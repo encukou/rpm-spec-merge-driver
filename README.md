@@ -28,15 +28,15 @@ until you explicitly opt in.)
 
 ## Installation
 
-Put `spec-merge-driver` on your `PATH`
-(or use an absolute path for `spec-merge-driver` below).
+Put `rpm-spec-merge-driver` on your `PATH`
+(or use an absolute path for `rpm-spec-merge-driver` below).
 
 Add this section to your Git config:
 
 ```
 [merge "rpm-spec"]
     name = RPM spec file merge driver
-    driver = spec-merge-driver %O %A %B %L %P
+    driver = rpm-spec-merge-driver %O %A %B %L %P
     recursive = text
 ```
 
