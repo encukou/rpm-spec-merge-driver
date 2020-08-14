@@ -1,0 +1,77 @@
+FAIL
+-------- 8< --------
+
+Name: downgrades
+
+Version: 2.0
+Release: 1%{?dist}
+
+... Initial spec file content ...
+
+%changelog
+* Tue May 31 2016 Happy Packager <happy@example.org> - 2.0-1
+- Hello world
+
+
+-------- 8< --------
+
+Name: downgrades
+
+Version: 1.1
+Release: 1%{?dist}
+
+... Initial spec file content ...
+
+%changelog
+* Tue May 31 2017 Happy Packager <happy@example.org> - 1.1-1
+- Downgraded
+
+* Tue May 31 2016 Happy Packager <happy@example.org> - 2.0-1
+- Hello world
+
+
+-------- 8< --------
+
+Name: downgrades
+
+Version: 1.0
+Release: 1%{?dist}
+
+... Initial spec file content ...
+
+%changelog
+* Tue May 31 2017 Happy Packager <happy@example.org> - 1.1-0
+- Downgraded
+
+* Tue May 31 2016 Happy Packager <happy@example.org> - 2.0-1
+- Hello world
+
+
+-------- 8< --------
+
+Name: downgrades
+
+<<<<<<< HEAD
+Version: 1.1
+||||||| merged common ancestors
+Version: 2.0
+=======
+Version: 1.0
+>>>>>>> new
+Release: 1%{?dist}
+
+... Initial spec file content ...
+
+%changelog
+<<<<<<< HEAD
+* Tue May 31 2017 Happy Packager <happy@example.org> - 1.1-1
+- Downgraded
+
+||||||| merged common ancestors
+=======
+* Tue May 31 2017 Happy Packager <happy@example.org> - 1.1-0
+- Downgraded
+
+>>>>>>> new
+* Tue May 31 2016 Happy Packager <happy@example.org> - 2.0-1
+- Hello world

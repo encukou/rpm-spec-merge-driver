@@ -1,0 +1,95 @@
+FAIL
+-------- 8< --------
+
+Name: conflict
+
+Version: 1.0
+Release: 5%{?dist}
+
+... Initial spec file content ...
+
+%changelog
+* Tue May 31 2016 Happy Packager <happy@example.org> - 1.0-5
+- Fixed something
+
+* Tue May 31 2015 Happy Packager <happy@example.org> - 1.0-4
+- Hello world
+
+
+-------- 8< --------
+
+Name: conflict
+
+Version: 1.1
+Release: 2%{?dist}
+
+... Patched spec file content ...
+
+%changelog
+* Tue May 31 2018 Happy Packager <happy@example.org> - 1.1-2
+- Add sources
+
+* Tue May 31 2017 Happy Packager <happy@example.org> - 1.1-1
+- New upstream release
+
+* Tue May 31 2016 Happy Packager <happy@example.org> - 1.0-5
+- Fixed something
+
+* Tue May 31 2015 Happy Packager <happy@example.org> - 1.0-4
+- Hello world
+
+
+-------- 8< --------
+
+Name: conflict
+
+Version: 2.0
+Release: 1%{?dist}
+
+... Spec file content, also patched ...
+
+%changelog
+* Tue May 31 2019 Happy Packager <happy@example.org> - 1.0.7
+- Adjust the patch
+
+* Tue May 31 2019 Happy Packager <happy@example.org> - 1.0.6
+- Add a patch
+
+* Tue May 31 2016 Happy Packager <happy@example.org> - 1.0-5
+- Fixed something
+
+* Tue May 31 2015 Happy Packager <happy@example.org> - 1.0-4
+- Hello world
+
+
+-------- 8< --------
+
+Name: conflict
+
+Version: 2.0
+Release: 1%{?dist}
+
+<<<<<<< HEAD
+... Patched spec file content ...
+||||||| merged common ancestors
+... Initial spec file content ...
+=======
+... Spec file content, also patched ...
+>>>>>>> new
+
+%changelog
+* Thu Aug 13 2020 Merge Driver User <merger@example.org> - 2.0-1
+- Add a patch
+- Adjust the patch
+
+* Tue May 31 2018 Happy Packager <happy@example.org> - 1.1-2
+- Add sources
+
+* Tue May 31 2017 Happy Packager <happy@example.org> - 1.1-1
+- New upstream release
+
+* Tue May 31 2016 Happy Packager <happy@example.org> - 1.0-5
+- Fixed something
+
+* Tue May 31 2015 Happy Packager <happy@example.org> - 1.0-4
+- Hello world
