@@ -1,9 +1,11 @@
 #! /usr/bin/env python3
 
 from pathlib import Path
+import contextlib
 import sys
 import re
 import argparse
+import tempfile
 import traceback
 import subprocess
 import functools
@@ -13,7 +15,7 @@ import os
 import email.utils
 
 VERSION_RE = re.compile(r'Version:(\s*)(\S*)')
-RELEASE_RE = re.compile(r'Release:(\s*)([0-9]*)%\{\?dist\}')
+RELEASE_RE = re.compile(r'Release:(\s*)(\S*)')
 CHANGELOG_RE = re.compile(
     r'\*\s*(\w+)\s*(\w+)\s*(\d+)\s*(\d+)\s*([^<]+)<\s*([^>]+)>\s*-\s*(.*)',
     re.DOTALL,
@@ -59,7 +61,7 @@ class Spec:
                             raise ValueError(f'Multiple Release lines')
                         self.release_match = match
                         self.release_lineno = lineno
-                        self.release = int(match[2])
+                        self.release = match[2]
                     if stripped == '%changelog':
                         self.changelog = Changelog(
                             input_file,
@@ -80,7 +82,7 @@ class Spec:
         self.first_lines[self.version_lineno] = new
 
     def set_release(self, new_release):
-        new = f'Release:{self.release_match.group(1)}{new_release}%{{?dist}}\n'
+        new = f'Release:{self.release_match.group(1)}{new_release}\n'
         self.first_lines[self.release_lineno] = new
 
     def write_to(self, path):
@@ -175,10 +177,39 @@ def get_changelog_header(version, release):
         stdout=subprocess.PIPE,
         encoding='utf-8',
     )
-    print(proc.stdout.strip())
-    wd, day, mon, year, _, _, rest = proc.stdout.strip().split(' ', 6)
+    date_author = proc.stdout.strip()
+    proc = subprocess.run(
+        ['rpm', '--undefine=dist', '--eval', release],
+        check=True,
+        stdout=subprocess.PIPE,
+        encoding='utf-8',
+    )
+    release = proc.stdout.strip()
+    wd, day, mon, year, _, _, rest = date_author.split(' ', 6)
     wd = wd.strip(',')
     return f'* {wd} {mon} {day} {year} {rest} - {version}-{release}\n'
+
+
+def bump_release(old_release):
+    """Returns a release value, bumped by rpmdev-bumpspec.
+    """
+    field = 'Release: '
+    try:
+        with tempfile.NamedTemporaryFile('w', delete=False) as f:
+            print(f'{field}{old_release}', file=f)
+            path = f.name
+
+        subprocess.run(
+            ['rpmdev-bumpspec', path],
+            check=True,
+            stderr=subprocess.DEVNULL,  # no Version, Summary, etc. warnings/errors
+        )
+
+        with open(path) as f:
+            return f.read().strip()[len(field):]
+    finally:
+        with contextlib.suppress(NameError, FileNotFoundError):
+            os.remove(path)
 
 
 def main(base, main, new, marker_size, pathname):
@@ -202,7 +233,7 @@ def main(base, main, new, marker_size, pathname):
             key=rpmdev_vercmp_key,
         )
         if max_version == main_spec.version:
-            release = main_spec.release + 1
+            release = bump_release(main_spec.release)
         elif max_version == new_spec.version:
             release = new_spec.release
         for spec in specs:
