@@ -78,7 +78,7 @@ Release: 1%{?dist}
 >>>>>>> new
 
 %changelog
-* Thu Aug 13 2020 Merge Driver User <merger@example.org> - 2.0-1
+* Thu Aug 13 2020 Merge Driver 💁 <merger@example.org> - 2.0-1
 - Add a patch
 - Adjust the patch
 

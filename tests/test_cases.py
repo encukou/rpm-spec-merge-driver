@@ -56,7 +56,7 @@ def test_case(case_filename, tmp_path):
     run('git', 'config', 'merge.rpm-spec.recursive', 'text', cwd=repo_path)
     run('git', 'config', 'merge.verbosity', '5', cwd=repo_path)
     run('git', 'config', 'merge.conflictStyle', 'diff3', cwd=repo_path)
-    run('git', 'config', 'user.name', 'Merge Driver User', cwd=repo_path)
+    run('git', 'config', 'user.name', 'Merge Driver 💁', cwd=repo_path)
     run('git', 'config', 'user.email', 'merger@example.org', cwd=repo_path)
     run('cat', '.git/config', cwd=repo_path)
 
