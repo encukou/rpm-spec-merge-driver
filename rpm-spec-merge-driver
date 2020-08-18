@@ -165,7 +165,7 @@ def get_changelog_header(version, release):
         ['git', 'commit-tree', '4b825dc642cb6eb9a060e54bf8d69288fbee4904'],
         check=True,
         stdout=subprocess.PIPE,
-        encoding='ascii',
+        encoding='utf-8',
         input='',
     )
     sha = proc.stdout.strip()
@@ -173,7 +173,7 @@ def get_changelog_header(version, release):
         ['git', 'show', '--pretty=format:%aD %aN <%aE>', sha],
         check=True,
         stdout=subprocess.PIPE,
-        encoding='ascii',
+        encoding='utf-8',
     )
     print(proc.stdout.strip())
     wd, day, mon, year, _, _, rest = proc.stdout.strip().split(' ', 6)
