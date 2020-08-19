@@ -69,12 +69,11 @@ and contain exactly one each of the following lines:
 
 ```
 Version: ...
-Release: ...%{?dist}
+Release: ...
 %changelog
 ```
 
 Any number of spaces is allowed after the `:`.
-The `...` in Release must be numeric.
 
 Everything after `%changelog` is entries separated by lines in the
 *changelog header* format,
@@ -109,7 +108,8 @@ All other changes are passed to Git's built-in 3-way merge (`git merge-file`).
 The merge driver selects the *highest* version from the files being merged,
 as determined by `rpmdev-vercmp`.
 
-If MAIN has the highest version, Release is set to MAIN's release plus one.
+If MAIN has the highest version,
+Release is set to MAIN's release bumped by `rpmdev-bumpspec`.
 
 Otherwise if NEW has the hightest version, Release is set to NEW's release.
 

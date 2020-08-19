@@ -4,15 +4,15 @@ OK
 Name: patch-vs-update
 
 Version: 1.0
-Release: 5%{?dist}
+Release: 0.5%{?dist}
 
 ... Initial spec file content ...
 
 %changelog
-* Tue May 31 2016 Happy Packager <happy@example.org> - 1.0-5
+* Tue May 31 2016 Happy Packager <happy@example.org> - 1.0-0.5
 - Fixed something
 
-* Tue May 31 2015 Happy Packager <happy@example.org> - 1.0-4
+* Tue May 31 2015 Happy Packager <happy@example.org> - 1.0-0.4
 - Hello world
 
 
@@ -21,21 +21,21 @@ Release: 5%{?dist}
 Name: patch-vs-update
 
 Version: 1.0
-Release: 7%{?dist}
+Release: 0.7%{?dist}
 
 ... Patched spec file content ...
 
 %changelog
-* Tue May 31 2019 Happy Packager <happy@example.org> - 1.0.7
+* Tue May 31 2019 Happy Packager <happy@example.org> - 1.0-0.7
 - Adjust the patch
 
-* Tue May 31 2019 Happy Packager <happy@example.org> - 1.0.6
+* Tue May 31 2019 Happy Packager <happy@example.org> - 1.0-0.6
 - Add a patch
 
-* Tue May 31 2016 Happy Packager <happy@example.org> - 1.0-5
+* Tue May 31 2016 Happy Packager <happy@example.org> - 1.0-0.5
 - Fixed something
 
-* Tue May 31 2015 Happy Packager <happy@example.org> - 1.0-4
+* Tue May 31 2015 Happy Packager <happy@example.org> - 1.0-0.4
 - Hello world
 
 
@@ -44,21 +44,21 @@ Release: 7%{?dist}
 Name: patch-vs-update
 
 Version: 1.1
-Release: 2%{?dist}
+Release: 0.2%{?dist}
 
 ... Initial spec file content ...
 
 %changelog
-* Tue May 31 2018 Happy Packager <happy@example.org> - 1.1-2
+* Tue May 31 2018 Happy Packager <happy@example.org> - 1.1-0.2
 - Add sources
 
-* Tue May 31 2017 Happy Packager <happy@example.org> - 1.1-1
+* Tue May 31 2017 Happy Packager <happy@example.org> - 1.1-0.1
 - New upstream release
 
-* Tue May 31 2016 Happy Packager <happy@example.org> - 1.0-5
+* Tue May 31 2016 Happy Packager <happy@example.org> - 1.0-0.5
 - Fixed something
 
-* Tue May 31 2015 Happy Packager <happy@example.org> - 1.0-4
+* Tue May 31 2015 Happy Packager <happy@example.org> - 1.0-0.4
 - Hello world
 
 
@@ -67,23 +67,23 @@ Release: 2%{?dist}
 Name: patch-vs-update
 
 Version: 1.1
-Release: 2%{?dist}
+Release: 0.2%{?dist}
 
 ... Patched spec file content ...
 
 %changelog
-* Thu Aug 13 2020 Happy Packager <happy@example.org> - 1.1-2
+* Thu Aug 13 2020 Happy Packager <happy@example.org> - 1.1-0.2
 - New upstream release
 - Add sources
 
-* Tue May 31 2019 Happy Packager <happy@example.org> - 1.0.7
+* Tue May 31 2019 Happy Packager <happy@example.org> - 1.0-0.7
 - Adjust the patch
 
-* Tue May 31 2019 Happy Packager <happy@example.org> - 1.0.6
+* Tue May 31 2019 Happy Packager <happy@example.org> - 1.0-0.6
 - Add a patch
 
-* Tue May 31 2016 Happy Packager <happy@example.org> - 1.0-5
+* Tue May 31 2016 Happy Packager <happy@example.org> - 1.0-0.5
 - Fixed something
 
-* Tue May 31 2015 Happy Packager <happy@example.org> - 1.0-4
+* Tue May 31 2015 Happy Packager <happy@example.org> - 1.0-0.4
 - Hello world
