@@ -78,6 +78,8 @@ Any number of spaces is allowed after the `:`.
 Everything after `%changelog` is entries separated by lines in the
 *changelog header* format,
 `* Day-of-Week Month Day Year Full Name <email> - Version-Release`.
+(This is apparently only one of the possible formats.
+If you use another one—patches welcome!)
 These header lines don't repeat.
 New blocks are only added at the top.
 Very old blocks might be removed from the bottom.
