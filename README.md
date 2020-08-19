@@ -62,6 +62,14 @@ If the driver *fails*, the standard Git merge driver is called and you will
 need to resolve all the conflicts, as usual.
 
 
+## Command line usage
+
+The merge driver can be used as a standalone tool.
+This should be useful it you're merging something other than Git branches
+(but note that you might still need to be in a Git repo).
+Call the command with `--help` for details.
+
+
 ## Assumptions
 
 Your spec file must be UTF-8 encoded
