@@ -138,9 +138,13 @@ The MAIN's *new* part is added as-is.
 From NEW, the order of the *new* changelog blocks is reversed,
 the header lines are removed,
 and the content is added to the beginning of the changelog.
-A new header line is added,
-using the date, `user.name` and `user.email` as if you did a Git commit,
-and the new version and release.
+A new header line is added using the author of the original change,
+the current date, and the new version and release.
+If more changelogs are merged in, the last one in the file
+(the first one chronologically) is used.
+The current date is overridable using `$CURRENT_DATE` in a format
+suitable for Python's `datetime.datetime.fromisoformat`, e.g.
+`YYYY-MM-DD`.
 
 
 ## Tests
@@ -153,5 +157,4 @@ Run `pytest` for the tests.
 
 The tool is available under the MIT license, see `LICENSE.MIT`.
 May it serve you well.
-
 
