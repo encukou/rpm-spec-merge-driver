@@ -29,7 +29,7 @@ def run(*argv, **kwargs):
     print(argv, file=sys.stderr)
     kwargs.setdefault('check', True)
     env = kwargs.setdefault('env', {})
-    env.setdefault('GIT_AUTHOR_DATE', '2020-08-13 12:34')
+    env.setdefault('CURRENT_DATE', '2020-08-13')
     env.setdefault('GIT_CONFIG_NOSYSTEM', '1')
     env.setdefault('HOME', CASES_PATH)
     env.setdefault('XDG_CONFIG_HOME', CASES_PATH)
