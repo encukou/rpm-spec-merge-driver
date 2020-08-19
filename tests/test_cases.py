@@ -13,6 +13,8 @@ from pathlib import Path
 import re
 import sys
 import subprocess
+import tempfile
+import contextlib
 
 import pytest
 
@@ -36,6 +38,19 @@ def run(*argv, **kwargs):
     return subprocess.run(argv, **kwargs)
 
 
+def init_git(repo_path):
+    run('git', 'init', cwd=repo_path)
+
+    run('git', 'config', 'merge.rpm-spec.name', 'RPM spec file merge driver', cwd=repo_path)
+    run('git', 'config', 'merge.rpm-spec.driver', f'{TOOL} %O %A %B %L %P', cwd=repo_path)
+    run('git', 'config', 'merge.rpm-spec.recursive', 'text', cwd=repo_path)
+    run('git', 'config', 'merge.verbosity', '5', cwd=repo_path)
+    run('git', 'config', 'merge.conflictStyle', 'diff3', cwd=repo_path)
+    run('git', 'config', 'user.name', 'Merge Driver User', cwd=repo_path)
+    run('git', 'config', 'user.email', 'merger@example.org', cwd=repo_path)
+    run('cat', '.git/config', cwd=repo_path)
+
+
 @pytest.mark.parametrize(
     'case_filename', (str(p.relative_to(CASES_PATH)) for p in case_filenames),
 )
@@ -49,16 +64,7 @@ def test_case(case_filename, tmp_path):
     file_path = repo_path / 'test.spec'
     attrs_path = repo_path / '.gitattributes'
 
-    run('git', 'init', cwd=repo_path)
-
-    run('git', 'config', 'merge.rpm-spec.name', 'RPM spec file merge driver', cwd=repo_path)
-    run('git', 'config', 'merge.rpm-spec.driver', f'{TOOL} %O %A %B %L %P', cwd=repo_path)
-    run('git', 'config', 'merge.rpm-spec.recursive', 'text', cwd=repo_path)
-    run('git', 'config', 'merge.verbosity', '5', cwd=repo_path)
-    run('git', 'config', 'merge.conflictStyle', 'diff3', cwd=repo_path)
-    run('git', 'config', 'user.name', 'Merge Driver 💁', cwd=repo_path)
-    run('git', 'config', 'user.email', 'merger@example.org', cwd=repo_path)
-    run('cat', '.git/config', cwd=repo_path)
+    init_git(repo_path)
 
     attrs_path.write_text('*.spec  merge=rpm-spec\n')
     file_path.write_text(base.strip())
@@ -76,6 +82,46 @@ def test_case(case_filename, tmp_path):
     run('git', 'commit', '-m', 'Main', 'test.spec', cwd=repo_path)
 
     proc = run('git', 'merge', 'new', cwd=repo_path, check=False)
+
+    result = file_path.read_text()
+
+    assert result == expected.strip()
+    if ok.strip() == 'OK':
+        assert proc.returncode == 0
+    else:
+        assert proc.returncode != 0
+
+
+@pytest.mark.parametrize(
+    'case_filename', (str(p.relative_to(CASES_PATH)) for p in case_filenames),
+)
+def test_cross_branch(case_filename, tmp_path):
+    source = CASES_PATH.joinpath(case_filename).read_text()
+    ok, base, main, new, expected = SCISSORS_RE.split(source)
+
+    repo_path = tmp_path / 'repo'
+    repo_path.mkdir()
+
+    file_path = repo_path / 'test.spec'
+    attrs_path = repo_path / '.gitattributes'
+
+    init_git(repo_path)
+
+    attrs_path.write_text('*.spec  merge=rpm-spec\n')
+    file_path.write_text(new.strip())
+    run('git', 'add', '.gitattributes', 'test.spec', cwd=repo_path)
+    run('git', 'commit', '-m', 'Base', cwd=repo_path)
+
+    base_path = tmp_path / 'base.spec'
+    main_path = tmp_path / 'main.spec'
+
+    base_path.write_text(base.strip())
+    main_path.write_text(main.strip())
+
+    proc = run(
+        TOOL, base_path, main_path, file_path,
+        cwd=repo_path, check=False
+    )
 
     result = file_path.read_text()
 
