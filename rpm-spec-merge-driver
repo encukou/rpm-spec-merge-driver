@@ -185,7 +185,7 @@ def get_changelog_header(author, version, release):
         encoding='utf-8',
     )
     release = proc.stdout.strip()
-    return f'* {wd} {month} {date.day} {date.year} {author} - {version}-{release}\n'
+    return f'* {wd} {month} {date.day:02} {date.year} {author} - {version}-{release}\n'
 
 
 def bump_release(old_release):
